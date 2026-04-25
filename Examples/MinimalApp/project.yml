@@ -1,0 +1,23 @@
+name: MinimalApp
+settings:
+  CODE_SIGNING_ALLOWED: NO
+  GENERATE_INFOPLIST_FILE: YES
+packages:
+  Screenshotz:
+    path: ../..
+targets:
+  MinimalApp:
+    type: application
+    platform: iOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.wacumov.screenshotz-demo
+    sources: MinimalApp
+  MinimalAppScreenshots:
+    type: bundle.unit-test
+    platform: iOS
+    sources: MinimalAppScreenshots
+    hostApplication: MinimalApp
+    dependencies:
+      - target: MinimalApp
+      - package: Screenshotz
