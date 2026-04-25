@@ -15,4 +15,8 @@ public struct Device: Sendable {
 
     public static let iphone = Device(folder: "iphone", width: 440, height: 956, scale: 3)
     public static let ipad = Device(folder: "ipad", width: 1032, height: 1376, scale: 2)
+
+    public var landscape: Device {
+        Device(folder: folder, width: height, height: width, scale: scale)
+    }
 }

@@ -11,6 +11,7 @@ public extension Screenshotz {
         _ name: String,
         locale: String,
         device: Device = .iphone,
+        folder: String = "screenshots",
         file: StaticString = #filePath,
         @ViewBuilder content: () -> Content
     ) async throws -> URL {
@@ -29,7 +30,7 @@ public extension Screenshotz {
 
         let directory = URL(fileURLWithPath: "\(file)")
             .deletingLastPathComponent()
-            .appendingPathComponent("screenshots", isDirectory: true)
+            .appendingPathComponent(folder, isDirectory: true)
             .appendingPathComponent(device.folder, isDirectory: true)
             .appendingPathComponent(locale, isDirectory: true)
 
