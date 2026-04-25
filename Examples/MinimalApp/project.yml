@@ -1,6 +1,5 @@
 name: MinimalApp
 settings:
-  CODE_SIGNING_ALLOWED: NO
   GENERATE_INFOPLIST_FILE: YES
 packages:
   Screenshotz:
