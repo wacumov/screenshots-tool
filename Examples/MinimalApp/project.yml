@@ -1,6 +1,7 @@
 name: MinimalApp
 settings:
   GENERATE_INFOPLIST_FILE: YES
+  INFOPLIST_KEY_UILaunchScreen_Generation: YES
 packages:
   Screenshotz:
     path: ../..
