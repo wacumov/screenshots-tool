@@ -10,15 +10,15 @@ public extension Screenshotz {
     static func record<Content: View>(
         _ name: String,
         locale: String,
-        outputDirectory: URL? = nil,
+        device: Device = .iphone,
         file: StaticString = #filePath,
         @ViewBuilder content: () -> Content
     ) async throws -> URL {
         let view = AnyView(content().environment(\.locale, Locale(identifier: locale)))
 
         let snapshotting = Snapshotting<AnyView, UIImage>.image(
-            layout: .fixed(width: 440, height: 956),
-            traits: UITraitCollection(displayScale: 3)
+            layout: .fixed(width: device.width, height: device.height),
+            traits: UITraitCollection(displayScale: device.scale)
         )
 
         let image = await withCheckedContinuation { continuation in
@@ -27,9 +27,10 @@ public extension Screenshotz {
             }
         }
 
-        let directory = (outputDirectory ?? URL(fileURLWithPath: "\(file)")
+        let directory = URL(fileURLWithPath: "\(file)")
             .deletingLastPathComponent()
-            .appendingPathComponent("screenshots/iphone", isDirectory: true))
+            .appendingPathComponent("screenshots", isDirectory: true)
+            .appendingPathComponent(device.folder, isDirectory: true)
             .appendingPathComponent(locale, isDirectory: true)
 
         let fileURL = directory
