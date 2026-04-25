@@ -4,7 +4,7 @@ import SwiftUI
 struct MinimalApp: App {
     var body: some Scene {
         WindowGroup {
-            FirstView()
+            RootView()
         }
     }
 }

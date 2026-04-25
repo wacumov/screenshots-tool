@@ -18,6 +18,7 @@ public extension Screenshotz {
         let view = AnyView(content().environment(\.locale, Locale(identifier: locale)))
 
         let snapshotting = Snapshotting<AnyView, UIImage>.image(
+            drawHierarchyInKeyWindow: true,
             layout: .fixed(width: device.width, height: device.height),
             traits: UITraitCollection(displayScale: device.scale)
         )
