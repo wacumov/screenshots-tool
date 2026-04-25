@@ -9,24 +9,28 @@ public extension Screenshotz {
     @discardableResult
     static func record<Content: View>(
         _ name: String,
+        locale: String,
         outputDirectory: URL? = nil,
         file: StaticString = #filePath,
         @ViewBuilder content: () -> Content
     ) async throws -> URL {
-        let snapshotting = Snapshotting<Content, UIImage>.image(
+        let view = AnyView(content().environment(\.locale, Locale(identifier: locale)))
+
+        let snapshotting = Snapshotting<AnyView, UIImage>.image(
             layout: .fixed(width: 440, height: 956),
             traits: UITraitCollection(displayScale: 3)
         )
 
         let image = await withCheckedContinuation { continuation in
-            snapshotting.snapshot(content()).run {
+            snapshotting.snapshot(view).run {
                 continuation.resume(returning: $0)
             }
         }
 
-        let directory = outputDirectory ?? URL(fileURLWithPath: "\(file)")
+        let directory = (outputDirectory ?? URL(fileURLWithPath: "\(file)")
             .deletingLastPathComponent()
-            .appendingPathComponent("screenshots/iphone", isDirectory: true)
+            .appendingPathComponent("screenshots/iphone", isDirectory: true))
+            .appendingPathComponent(locale, isDirectory: true)
 
         let fileURL = directory
             .appendingPathComponent(name, isDirectory: false)

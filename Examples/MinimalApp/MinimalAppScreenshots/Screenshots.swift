@@ -3,8 +3,9 @@ import Testing
 @testable import MinimalApp
 
 @MainActor
-@Test func recordScreenshotOne() async throws {
-    try await Screenshotz.record("1") {
+@Test(arguments: ["en-US", "de-DE"])
+func recordScreenshotOne(locale: String) async throws {
+    try await Screenshotz.record("1", locale: locale) {
         FirstView()
     }
 }
