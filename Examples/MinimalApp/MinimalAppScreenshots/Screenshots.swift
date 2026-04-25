@@ -4,8 +4,7 @@ import Testing
 
 @MainActor
 @Test(arguments: ["en-US", "de-DE"])
-func recordScreenshotOne(locale: String) async throws {
-    try await Screenshotz.record("1", locale: locale) {
-        FirstView()
-    }
+func recordScreenshots(locale: String) async throws {
+    try await Screenshotz.record("1", locale: locale) { FirstView() }
+    try await Screenshotz.record("2", locale: locale) { SecondView() }
 }

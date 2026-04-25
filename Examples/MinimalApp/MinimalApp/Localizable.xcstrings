@@ -10,6 +10,16 @@
           }
         }
       }
+    },
+    "Second View" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zweite Ansicht"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
