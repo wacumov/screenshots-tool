@@ -9,7 +9,8 @@ public extension Screenshotz {
     @discardableResult
     static func record<Content: View>(
         _ name: String,
-        outputDirectory: URL = URL(fileURLWithPath: "screenshots/iphone", isDirectory: true),
+        outputDirectory: URL? = nil,
+        file: StaticString = #filePath,
         @ViewBuilder content: () -> Content
     ) async throws -> URL {
         let snapshotting = Snapshotting<Content, UIImage>.image(
@@ -23,12 +24,16 @@ public extension Screenshotz {
             }
         }
 
-        let fileURL = outputDirectory
+        let directory = outputDirectory ?? URL(fileURLWithPath: "\(file)")
+            .deletingLastPathComponent()
+            .appendingPathComponent("screenshots/iphone", isDirectory: true)
+
+        let fileURL = directory
             .appendingPathComponent(name, isDirectory: false)
             .appendingPathExtension("png")
 
         try FileManager.default.createDirectory(
-            at: outputDirectory,
+            at: directory,
             withIntermediateDirectories: true
         )
         try snapshotting.diffing.toData(image).write(to: fileURL)
