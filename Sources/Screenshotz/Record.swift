@@ -10,29 +10,41 @@ public extension Screenshotz {
     static func record<Content: View>(
         _ name: String,
         locale: String,
-        device: Device = .iphone,
-        folder: String = "screenshots",
         file: StaticString = #filePath,
         @ViewBuilder content: () -> Content
     ) async throws -> URL {
-        let view = AnyView(content().environment(\.locale, Locale(identifier: locale)))
+        let scene = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }.first!
+        let window = scene.windows.first { $0.isKeyWindow } ?? scene.windows.first!
 
-        let snapshotting = Snapshotting<AnyView, UIImage>.image(
+        let host = UIHostingController(
+            rootView: content().environment(\.locale, Locale(identifier: locale))
+        )
+
+        let config = ViewImageConfig(
+            safeArea: window.safeAreaInsets,
+            size: window.bounds.size,
+            traits: window.traitCollection
+        )
+
+        let snapshotting = Snapshotting<UIViewController, UIImage>.image(
+            on: config,
             drawHierarchyInKeyWindow: true,
-            layout: .fixed(width: device.width, height: device.height),
-            traits: UITraitCollection(displayScale: device.scale)
+            traits: window.traitCollection
         )
 
         let image = await withCheckedContinuation { continuation in
-            snapshotting.snapshot(view).run {
+            snapshotting.snapshot(host).run {
                 continuation.resume(returning: $0)
             }
         }
 
+        let deviceFolder = window.traitCollection.userInterfaceIdiom == .pad ? "ipad" : "iphone"
+
         let directory = URL(fileURLWithPath: "\(file)")
             .deletingLastPathComponent()
-            .appendingPathComponent(folder, isDirectory: true)
-            .appendingPathComponent(device.folder, isDirectory: true)
+            .appendingPathComponent("screenshots", isDirectory: true)
+            .appendingPathComponent(deviceFolder, isDirectory: true)
             .appendingPathComponent(locale, isDirectory: true)
 
         let fileURL = directory
