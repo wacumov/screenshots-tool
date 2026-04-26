@@ -1,12 +1,13 @@
 SCHEME := MinimalAppScreenshots
 
-.PHONY: screenshots iphone ipad
+.PHONY: screenshots iphone-pro-max iphone ipad
 
-screenshots: iphone ipad
+screenshots: iphone-pro-max iphone ipad
 
-iphone: NAME := iPhone 17 Pro Max
+iphone-pro-max: NAME := iPhone 17 Pro Max
+iphone: NAME := iPhone 17
 ipad: NAME := iPad Pro 13-inch (M5)
-iphone ipad: MinimalApp.xcodeproj
+iphone-pro-max iphone ipad: MinimalApp.xcodeproj
 	xcodebuild test -project $< -scheme $(SCHEME) -destination "platform=iOS Simulator,name=$(NAME)"
 
 MinimalApp.xcodeproj: project.yml

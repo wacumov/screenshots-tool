@@ -39,7 +39,10 @@ public extension Screenshotz {
             }
         }
 
-        let deviceFolder = window.traitCollection.userInterfaceIdiom == .pad ? "ipad" : "iphone"
+        let deviceFolder = ProcessInfo.processInfo.environment["SIMULATOR_DEVICE_NAME"]?
+            .lowercased()
+            .replacingOccurrences(of: " ", with: "-")
+            ?? (window.traitCollection.userInterfaceIdiom == .pad ? "ipad" : "iphone")
 
         let directory = URL(fileURLWithPath: "\(file)")
             .deletingLastPathComponent()
