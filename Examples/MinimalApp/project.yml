@@ -3,7 +3,7 @@ settings:
   GENERATE_INFOPLIST_FILE: YES
   INFOPLIST_KEY_UILaunchScreen_Generation: YES
 packages:
-  Screenshotz:
+  ScreenshotsTool:
     path: ../..
 targets:
   MinimalApp:
@@ -11,13 +11,15 @@ targets:
     platform: iOS
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: io.github.wacumov.screenshotz-demo
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.wacumov.screenshots-tool-demo
     sources: MinimalApp
   MinimalAppScreenshots:
     type: bundle.unit-test
     platform: iOS
-    sources: MinimalAppScreenshots
+    sources:
+      - path: MinimalAppScreenshots
+        excludes: [screenshots]
     hostApplication: MinimalApp
     dependencies:
       - target: MinimalApp
-      - package: Screenshotz
+      - package: ScreenshotsTool

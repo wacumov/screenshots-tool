@@ -4,7 +4,7 @@ import SnapshotTesting
 import SwiftUI
 import UIKit
 
-public extension Screenshotz {
+public extension ScreenshotsTool {
     @MainActor
     @discardableResult
     static func record<Content: View>(

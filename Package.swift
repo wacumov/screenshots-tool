@@ -3,15 +3,15 @@
 import PackageDescription
 
 let package = Package(
-    name: "Screenshotz",
+    name: "screenshots-tool",
     platforms: [
         .iOS(.v16),
         .macOS(.v10_15),
     ],
     products: [
         .library(
-            name: "Screenshotz",
-            targets: ["Screenshotz"]
+            name: "ScreenshotsTool",
+            targets: ["ScreenshotsTool"]
         ),
     ],
     dependencies: [
@@ -22,7 +22,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Screenshotz",
+            name: "ScreenshotsTool",
             dependencies: [
                 .product(
                     name: "SnapshotTesting",

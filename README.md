@@ -1,1 +1,1 @@
-# screenshotz
+# screenshots-tool
