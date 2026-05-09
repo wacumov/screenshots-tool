@@ -66,9 +66,9 @@ private struct Metrics<Content: View> {
     var frameRatio: CGFloat {
         switch (device, orientation) {
         case (.iphone, .portrait):
-            return 9 / 19.5
+            return 1206 / 2622
         case (.iphone, .landscape):
-            return 19.5 / 9
+            return 2622 / 1206
         case (.ipad, .portrait):
             return 3 / 4
         case (.ipad, .landscape):
@@ -104,7 +104,13 @@ private struct Metrics<Content: View> {
 
     func screenSize(in frameSize: CGSize) -> CGSize {
         let inset = bezel(in: frameSize)
-        return CGSize(width: frameSize.width - inset * 2, height: frameSize.height - inset * 2)
+        let maxSize = CGSize(width: frameSize.width - inset * 2, height: frameSize.height - inset * 2)
+
+        if maxSize.width / maxSize.height > frameRatio {
+            return CGSize(width: maxSize.height * frameRatio, height: maxSize.height)
+        } else {
+            return CGSize(width: maxSize.width, height: maxSize.width / frameRatio)
+        }
     }
 
     func bezel(in frameSize: CGSize) -> CGFloat {

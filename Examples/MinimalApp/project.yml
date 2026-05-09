@@ -18,8 +18,18 @@ targets:
     platform: iOS
     sources:
       - path: MinimalAppScreenshots
-        excludes: [screenshots]
+        excludes: [screenshots, marketing-screenshots]
     hostApplication: MinimalApp
     dependencies:
       - target: MinimalApp
       - package: ScreenshotsTool
+schemes:
+  MinimalAppScreenshots:
+    build:
+      targets:
+        MinimalAppScreenshots: all
+    test:
+      targets:
+        - MinimalAppScreenshots
+      environmentVariables:
+        SCREENSHOTS_MODE: $(SCREENSHOTS_MODE)
