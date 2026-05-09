@@ -10,6 +10,7 @@ public extension ScreenshotsTool {
     static func record<Content: View>(
         _ name: String,
         locale: String,
+        path: String = "screenshots",
         file: StaticString = #filePath,
         @ViewBuilder content: () -> Content
     ) async throws -> URL {
@@ -46,9 +47,9 @@ public extension ScreenshotsTool {
 
         let directory = URL(fileURLWithPath: "\(file)")
             .deletingLastPathComponent()
-            .appendingPathComponent("screenshots", isDirectory: true)
-            .appendingPathComponent(deviceFolder, isDirectory: true)
+            .appendingPathComponent(path, isDirectory: true)
             .appendingPathComponent(locale, isDirectory: true)
+            .appendingPathComponent(deviceFolder, isDirectory: true)
 
         let fileURL = directory
             .appendingPathComponent(name, isDirectory: false)
