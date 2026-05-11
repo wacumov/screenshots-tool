@@ -22,7 +22,7 @@ private struct MissingScreenshotImageError: LocalizedError {
     let url: URL
 
     var errorDescription: String? {
-        "Cannot read screenshot image at (url.path)."
+        "Cannot read screenshot image at \(url.path)."
     }
 }
 #endif
