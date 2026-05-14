@@ -63,7 +63,7 @@ private struct Metrics<Content: View> {
     let device: DeviceFrame<Content>.Device
     let orientation: DeviceFrame<Content>.Orientation
 
-    var frameRatio: CGFloat {
+    var screenRatio: CGFloat {
         switch (device, orientation) {
         case (.iphone, .portrait):
             return 1206 / 2622
@@ -74,6 +74,20 @@ private struct Metrics<Content: View> {
         case (.ipad, .landscape):
             return 4 / 3
         }
+    }
+
+    var frameRatio: CGFloat {
+        let inset = bezelScale * 2
+
+        if screenRatio > 1 {
+            return screenRatio * (1 - inset) + inset
+        } else {
+            return 1 / (inset + (1 - inset) / screenRatio)
+        }
+    }
+
+    var bezelScale: CGFloat {
+        device == .iphone ? 0.035 : 0.028
     }
 
     var shadowRadius: CGFloat {
@@ -104,34 +118,28 @@ private struct Metrics<Content: View> {
 
     func screenSize(in frameSize: CGSize) -> CGSize {
         let inset = bezel(in: frameSize)
-        let maxSize = CGSize(width: frameSize.width - inset * 2, height: frameSize.height - inset * 2)
-
-        if maxSize.width / maxSize.height > frameRatio {
-            return CGSize(width: maxSize.height * frameRatio, height: maxSize.height)
-        } else {
-            return CGSize(width: maxSize.width, height: maxSize.width / frameRatio)
-        }
+        return CGSize(width: frameSize.width - inset * 2, height: frameSize.height - inset * 2)
     }
 
     func bezel(in frameSize: CGSize) -> CGFloat {
-        min(frameSize.width, frameSize.height) * (device == .iphone ? 0.035 : 0.028)
+        min(frameSize.width, frameSize.height) * bezelScale
     }
 
     func frameRadius(for frameSize: CGSize) -> CGFloat {
-        min(frameSize.width, frameSize.height) * (device == .iphone ? 0.11 : 0.055)
+        min(frameSize.width, frameSize.height) * (device == .iphone ? 0.125 : 0.055)
     }
 
     func screenRadius(for frameSize: CGSize) -> CGFloat {
-        min(frameSize.width, frameSize.height) * (device == .iphone ? 0.075 : 0.035)
+        min(frameSize.width, frameSize.height) * (device == .iphone ? 0.088 : 0.035)
     }
 
     func cameraSize(in frameSize: CGSize) -> CGSize {
         let side = min(frameSize.width, frameSize.height)
         switch orientation {
         case .portrait:
-            return CGSize(width: side * 0.24, height: side * 0.035)
+            return CGSize(width: side * 0.24, height: side * 0.064)
         case .landscape:
-            return CGSize(width: side * 0.035, height: side * 0.24)
+            return CGSize(width: side * 0.064, height: side * 0.24)
         }
     }
 
@@ -139,9 +147,9 @@ private struct Metrics<Content: View> {
         let inset = bezel(in: frameSize) * 1.5
         switch orientation {
         case .portrait:
-            return CGSize(width: 0, height: -frameSize.height / 2 + inset * 2.2)
+            return CGSize(width: 0, height: -frameSize.height / 2 + inset * 1.9)
         case .landscape:
-            return CGSize(width: -frameSize.width / 2 + inset * 2.2, height: 0)
+            return CGSize(width: -frameSize.width / 2 + inset * 1.9, height: 0)
         }
     }
 }
