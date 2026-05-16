@@ -59,9 +59,26 @@ public extension ScreenshotsTool {
             at: directory,
             withIntermediateDirectories: true
         )
-        try snapshotting.diffing.toData(image).write(to: fileURL)
+        try opaquePNGData(from: image).write(to: fileURL)
 
         return fileURL
+    }
+}
+
+private func opaquePNGData(from image: UIImage) -> Data {
+    let format = UIGraphicsImageRendererFormat()
+    format.scale = image.scale
+    format.opaque = true
+    format.preferredRange = .standard
+
+    let size = image.size
+    let bounds = CGRect(origin: .zero, size: size)
+    let renderer = UIGraphicsImageRenderer(size: size, format: format)
+
+    return renderer.pngData { context in
+        context.cgContext.setFillColor(UIColor.white.cgColor)
+        context.cgContext.fill(bounds)
+        image.draw(in: bounds)
     }
 }
 #endif
