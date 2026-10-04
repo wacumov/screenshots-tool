@@ -32,45 +32,15 @@ private func recordMarketingScreenshot<Content: View>(
     let image = try ScreenshotImage(rawURL)
 
     try await ScreenshotsTool.record(name, locale: locale, path: "marketing-screenshots") {
-        MarketingScreenshot(title: title, content: image)
-    }
-}
-
-private struct MarketingScreenshot<Content: View>: View {
-    let title: LocalizedStringKey
-    let content: Content
-
-    var body: some View {
-        GeometryReader { geometry in
-            let side = min(geometry.size.width, geometry.size.height)
-            let ratio = max(geometry.size.width, geometry.size.height) / side
-            let device: DeviceFrame<Content>.Device = ratio > 1.7 ? .iphone : .ipad
-
-            ZStack {
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.95, green: 0.82, blue: 0.50),
-                        Color(red: 0.99, green: 0.45, blue: 0.32),
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-
-                VStack(spacing: side * 0.04) {
-                    Text(title)
-                        .font(.system(size: side * 0.075, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.white)
-                        .multilineTextAlignment(.center)
-                        .shadow(color: .black.opacity(0.22), radius: 8, y: 4)
-
-                    DeviceFrame(device) {
-                        content
-                    }
-                    .frame(maxWidth: geometry.size.width * 0.88, maxHeight: geometry.size.height * 0.78)
-                }
-                .padding(side * 0.055)
-            }
+        MarketingScreenshot(
+            title,
+            background: LinearGradient(
+                colors: [Color(red: 0.95, green: 0.82, blue: 0.50), Color(red: 0.99, green: 0.45, blue: 0.32)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        ) {
+            image
         }
     }
 }
