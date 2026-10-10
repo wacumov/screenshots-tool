@@ -11,6 +11,7 @@ public extension ScreenshotsTool {
         _ name: String,
         locale: String,
         path: String = "screenshots",
+        size: CGSize? = nil,
         file: StaticString = #filePath,
         @ViewBuilder content: () -> Content
     ) async throws -> URL {
@@ -23,14 +24,14 @@ public extension ScreenshotsTool {
         )
 
         let config = ViewImageConfig(
-            safeArea: window.safeAreaInsets,
-            size: window.bounds.size,
+            safeArea: size == nil ? window.safeAreaInsets : .zero,
+            size: size ?? window.bounds.size,
             traits: window.traitCollection
         )
 
         let snapshotting = Snapshotting<UIViewController, UIImage>.image(
             on: config,
-            drawHierarchyInKeyWindow: true,
+            drawHierarchyInKeyWindow: size == nil,
             traits: window.traitCollection
         )
 
