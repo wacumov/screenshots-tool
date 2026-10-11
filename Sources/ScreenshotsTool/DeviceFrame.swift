@@ -4,6 +4,8 @@ public struct DeviceFrame<Content: View>: View {
     public enum Device {
         case iphone
         case ipad
+        /// The outer display of iPhone Duo.
+        case iphoneDuo
     }
 
     public enum Orientation {
@@ -14,17 +16,20 @@ public struct DeviceFrame<Content: View>: View {
     private let device: Device
     private let orientation: Orientation
     private let statusBar: Bool
+    private let statusBarTitle: String?
     private let content: Content
 
     public init(
         _ device: Device,
         orientation: Orientation = .portrait,
         statusBar: Bool = true,
+        statusBarTitle: String? = nil,
         @ViewBuilder content: () -> Content
     ) {
         self.device = device
         self.orientation = orientation
         self.statusBar = statusBar
+        self.statusBarTitle = statusBarTitle
         self.content = content()
     }
 
@@ -39,21 +44,26 @@ public struct DeviceFrame<Content: View>: View {
                     SideButtons(frameSize: size)
                 }
 
-                RoundedRectangle(cornerRadius: metrics.frameRadius(for: size), style: .continuous)
+                metrics.frameShape(for: size)
                     .fill(.black)
                     .shadow(color: .black.opacity(0.28), radius: metrics.shadowRadius, y: metrics.shadowY)
 
-                RoundedRectangle(cornerRadius: metrics.screenRadius(for: size), style: .continuous)
+                metrics.screenShape(for: size)
                     .fill(.black)
                     .overlay(
                         content
                             .frame(width: screenSize.width, height: screenSize.height)
                             .overlay(alignment: .top) {
-                                if statusBar && orientation == .portrait {
-                                    StatusBar(device: device, screenSize: screenSize)
+                                if statusBar && orientation == .portrait && device != .iphoneDuo {
+                                    StatusBar(isPhone: device == .iphone, title: statusBarTitle, screenSize: screenSize)
                                 }
                             }
-                            .clipShape(RoundedRectangle(cornerRadius: metrics.screenRadius(for: size), style: .continuous))
+                            .overlay(alignment: .topTrailing) {
+                                if statusBar && orientation == .portrait && device == .iphoneDuo {
+                                    VerticalStatusBar(screenSize: screenSize)
+                                }
+                            }
+                            .clipShape(metrics.screenShape(for: size))
                     )
                     .frame(width: screenSize.width, height: screenSize.height)
 
@@ -85,6 +95,10 @@ private struct Metrics<Content: View> {
             return 3 / 4
         case (.ipad, .landscape):
             return 4 / 3
+        case (.iphoneDuo, .portrait):
+            return 1398 / 2034
+        case (.iphoneDuo, .landscape):
+            return 2034 / 1398
         }
     }
 
@@ -99,12 +113,12 @@ private struct Metrics<Content: View> {
     }
 
     var bezelScale: CGFloat {
-        device == .iphone ? 0.035 : 0.028
+        device == .ipad ? 0.028 : 0.035
     }
 
     var shadowRadius: CGFloat {
         switch device {
-        case .iphone:
+        case .iphone, .iphoneDuo:
             return 18
         case .ipad:
             return 24
@@ -113,7 +127,7 @@ private struct Metrics<Content: View> {
 
     var shadowY: CGFloat {
         switch device {
-        case .iphone:
+        case .iphone, .iphoneDuo:
             return 10
         case .ipad:
             return 14
@@ -137,12 +151,38 @@ private struct Metrics<Content: View> {
         min(frameSize.width, frameSize.height) * bezelScale
     }
 
-    func frameRadius(for frameSize: CGSize) -> CGFloat {
-        min(frameSize.width, frameSize.height) * (device == .iphone ? 0.125 : 0.055)
+    func frameShape(for frameSize: CGSize) -> UnevenRoundedRectangle {
+        let bezel = bezel(in: frameSize)
+        let screen = screenShape(for: frameSize)
+        return UnevenRoundedRectangle(
+            topLeadingRadius: screen.cornerRadii.topLeading + bezel,
+            bottomLeadingRadius: screen.cornerRadii.bottomLeading + bezel,
+            bottomTrailingRadius: screen.cornerRadii.bottomTrailing + bezel,
+            topTrailingRadius: screen.cornerRadii.topTrailing + bezel,
+            style: .continuous
+        )
     }
 
+    /// iPhone Duo outer display corners are 8 pt on the hinge side and 59 pt on the other side.
+    func screenShape(for frameSize: CGSize) -> UnevenRoundedRectangle {
+        guard device == .iphoneDuo else {
+            let radius = screenRadius(for: frameSize)
+            return UnevenRoundedRectangle(cornerRadii: .init(topLeading: radius, bottomLeading: radius, bottomTrailing: radius, topTrailing: radius), style: .continuous)
+        }
+        let screenWidth = screenSize(in: frameSize).width
+        let (hinge, outer) = (screenWidth * 8 / 466, screenWidth * 59 / 466)
+        return UnevenRoundedRectangle(
+            topLeadingRadius: hinge,
+            bottomLeadingRadius: hinge,
+            bottomTrailingRadius: outer,
+            topTrailingRadius: outer,
+            style: .continuous
+        )
+    }
+
+
     func screenRadius(for frameSize: CGSize) -> CGFloat {
-        min(frameSize.width, frameSize.height) * (device == .iphone ? 0.088 : 0.035)
+        min(frameSize.width, frameSize.height) * (device == .ipad ? 0.035 : 0.088)
     }
 
     func cameraSize(in frameSize: CGSize) -> CGSize {
@@ -190,37 +230,115 @@ private struct SideButtons: View {
 }
 
 private struct StatusBar: View {
-    let device: DeviceFrame<EmptyView>.Device
+    let isPhone: Bool
+    let title: String?
     let screenSize: CGSize
 
-    init<Content>(device: DeviceFrame<Content>.Device, screenSize: CGSize) {
-        self.device = device == .iphone ? .iphone : .ipad
-        self.screenSize = screenSize
-    }
+    // 9:41 on January 9, 2007, the time Apple uses in its marketing.
+    private static let date = Date(timeIntervalSince1970: 1_168_364_460)
 
     var body: some View {
-        let isPhone = device == .iphone
-        let fontSize = screenSize.width * (isPhone ? 0.04 : 0.0135)
-        HStack(spacing: fontSize * 0.3) {
-            Text("9:41")
-                .font(.system(size: fontSize, weight: .semibold))
-                .frame(maxWidth: isPhone ? .infinity : nil)
-            if isPhone {
+        if isPhone {
+            let fontSize = screenSize.width * 0.0425
+            HStack(spacing: 0) {
+                Text("9:41")
+                    .font(.system(size: fontSize, weight: .semibold))
+                    .frame(maxWidth: .infinity)
                 Spacer().frame(width: screenSize.width * 0.3)
-            } else {
+                icons(fontSize: fontSize)
+                    .frame(maxWidth: .infinity)
+            }
+            .foregroundStyle(.black)
+            .frame(height: screenSize.width * 0.16)
+        } else {
+            let fontSize = screenSize.width * 0.013
+            HStack(spacing: fontSize) {
+                Text("9:41")
+                Text(Self.date, format: .dateTime.weekday(.abbreviated))
+                    + Text(" ")
+                    + Text(Self.date, format: .dateTime.month(.abbreviated).day())
+                if let title {
+                    Text(title).fontWeight(.semibold)
+                }
                 Spacer()
+                icons(fontSize: fontSize)
             }
-            HStack(spacing: fontSize * 0.3) {
-                Image(systemName: "cellularbars")
-                Image(systemName: "wifi")
-                Image(systemName: "battery.100percent")
-                    .font(.system(size: fontSize * 1.15))
+            .font(.system(size: fontSize, weight: .medium))
+            .foregroundStyle(.black)
+            .padding(.horizontal, screenSize.width * 0.025)
+            .frame(height: fontSize * 2.35)
+        }
+    }
+
+    private func icons(fontSize: CGFloat) -> some View {
+        HStack(spacing: fontSize * 0.3) {
+            Image(systemName: "cellularbars")
+            Image(systemName: "wifi")
+            Image(systemName: "battery.100percent")
+                .font(.system(size: fontSize * 1.15))
+        }
+        .font(.system(size: fontSize * 0.85, weight: .semibold))
+    }
+}
+
+/// The status bar of the iPhone Duo outer display, at the top of its trailing column.
+private struct VerticalStatusBar: View {
+    let screenSize: CGSize
+
+    var body: some View {
+        let unit = screenSize.width / 466
+        VStack(spacing: 6 * unit) {
+            Text("9:41")
+                .font(.system(size: 16 * unit, weight: .semibold))
+            Circle()
+                .trim(from: 0.12, to: 0.88)
+                .stroke(style: StrokeStyle(lineWidth: 3.5 * unit, lineCap: .round))
+                .rotationEffect(.degrees(90))
+                .frame(width: 40 * unit, height: 40 * unit)
+                .overlay {
+                    WiFiShape()
+                        .frame(width: 15 * unit, height: 11 * unit)
+                }
+            HStack(spacing: 3 * unit) {
+                ForEach(0 ..< 4) { index in
+                    Circle()
+                        .frame(width: 4 * unit, height: 4 * unit)
+                        .offset(y: (index == 0 || index == 3 ? 0 : 1.5) * unit)
+                }
             }
-            .font(.system(size: fontSize * 0.85, weight: .semibold))
-            .frame(maxWidth: isPhone ? .infinity : nil)
+            .offset(y: -8 * unit)
         }
         .foregroundStyle(.black)
-        .padding(.horizontal, isPhone ? 0 : fontSize * 1.5)
-        .frame(height: isPhone ? screenSize.width * 0.125 : fontSize * 2.2)
+        .frame(width: 84 * unit)
+        .padding(.top, 81 * unit)
+        .offset(x: -3 * unit)
+    }
+}
+
+/// The Wi-Fi glyph, drawn as a shape because the SF Symbol does not render here on iOS 27.1.
+private struct WiFiShape: View {
+    var body: some View {
+        GeometryReader { geometry in
+            let size = geometry.size
+            let center = CGPoint(x: size.width / 2, y: size.height * 0.95)
+            let lineWidth = size.height * 0.16
+            ZStack {
+                ForEach(1 ..< 4) { index in
+                    Path { path in
+                        path.addArc(
+                            center: center,
+                            radius: size.height * 0.95 * CGFloat(index) / 3.2,
+                            startAngle: .degrees(-135),
+                            endAngle: .degrees(-45),
+                            clockwise: false
+                        )
+                    }
+                    .stroke(style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                }
+                Circle()
+                    .frame(width: lineWidth * 1.6, height: lineWidth * 1.6)
+                    .position(x: center.x, y: center.y - lineWidth * 0.3)
+            }
+        }
     }
 }
