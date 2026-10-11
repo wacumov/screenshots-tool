@@ -73,6 +73,14 @@ public struct DeviceFrame<Content: View>: View {
                         .frame(width: metrics.cameraSize(in: size).width, height: metrics.cameraSize(in: size).height)
                         .offset(metrics.cameraOffset(in: size))
                 }
+
+                if device == .iphoneDuo && orientation == .portrait {
+                    // Measured on Apple's iPhone Duo product photos.
+                    Circle()
+                        .fill(.black)
+                        .frame(width: screenSize.width * 35 / 466)
+                        .offset(x: screenSize.width * (418.6 / 466 - 0.5), y: screenSize.height * (48 / 678 - 0.5))
+                }
             }
             .frame(width: size.width, height: size.height)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
