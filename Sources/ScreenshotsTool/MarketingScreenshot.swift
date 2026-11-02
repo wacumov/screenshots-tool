@@ -26,11 +26,14 @@ public struct MarketingScreenshot<Background: View, Content: View>: View {
             ZStack {
                 background
                 VStack(spacing: side * 0.05) {
+                    // Two lines' room either way, so the device stays in place whatever the caption's length.
                     caption
                         .font(.system(size: side * 0.085, weight: .heavy, design: .rounded))
                         .foregroundStyle(captionColor)
                         .multilineTextAlignment(.center)
+                        .lineLimit(2)
                         .minimumScaleFactor(0.5)
+                        .frame(height: side * 0.085 * 2.5)
                     DeviceFrame(isPhone ? .iphone : .ipad) {
                         content
                     }
